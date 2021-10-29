@@ -1,35 +1,14 @@
 <template>
   <section class="container">
     <!-- v-if="user.name" -->
-    <div class="search-box">
-      <div class="row-box">
-        <div class="form-item">
-          <div class="form-item">
-            <label class="label-text keywords-label">发布时间</label>
-            <div style="display: flex;align-items: center;" @click="stateSelector">
-              <input disabled type="text" placeholder="请选择发布时间" class="input state-input" v-model="dataStr" />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row-box">
-        <div class="form-item">
-          <label class="label-text keywords-label">标题</label>
-          <div style="display: flex;align-items: center;">
-            <input type="text" placeholder="关键字搜索" class="input keywords-input" v-model="keywords" />
-          </div>
-        </div>
-        <button class="search-btn" @click="doSearch">查询</button>
-      </div>
-    </div>
     <div class="approval-items">
       <scroller ref="listRef" :on-refresh="refresh">
         <div class="approval-item-box" v-for="(item, index) in list" :key="item.AppID">
           <div class="approval-item" @click="goPDF(item)">
-            <div class="title dwwo-2">{{ index + 1 }}. {{ item.title || '' }}</div>
-            <div class="sub-title">
+            <div class="title dwwo-2">{{ index + 1 }}. {{ item.fileName || '' }}</div>
+            <!-- <div class="sub-title">
               <div class="applier">发布人：{{ item.issuer || '' }}</div>
-            </div>
+            </div> -->
           </div>
         </div>
       </scroller>
@@ -48,10 +27,7 @@ export default {
   data() {
     return {
       isLoading: false,
-      stateOptions: ['全部', '当天发布', '本周发布', '本月发布', '上月发布', '时间段'],
       list: [],
-      dataStr: '',
-      keywords: '',
       userId: '',
       userCode: ''
     }
@@ -62,14 +38,15 @@ export default {
   mounted() {
     this.getUserInfo()
     dd.biz.navigation.setTitle({
-      title: '通知查阅列表', // 控制标题文本，空字符串表示显示默认文本
+      title: '附件查阅列表', // 控制标题文本，空字符串表示显示默认文本
       onSuccess: function(result) {},
       onFail: function(err) {}
     })
+    console.log(this.$route.query)
   },
   methods: {
     getUserInfo() {
-      this.userId = this.home._LOGINUSER_.userid || ''
+      this.userId = this.home._LOGINUSER_.userid || 'A011814'
       if (this.userId) {
         this.userCode = Encrypt(this.userId)
         this.doSearch()
@@ -94,7 +71,7 @@ export default {
     },
     goPDF(item) {
       this.$router.push({
-        path: '/pdfIndex',
+        path: '/enclosureDetailed',
         query: item
       })
     },
@@ -110,12 +87,10 @@ export default {
     getApprovalList(successcb, errorCb) {
       let params = {
         userCode: this.userCode || '',
-        dataStr: this.dataStr || '',
-        keywords: this.keywords || ''
+        readId: this.$route.query.readId || ''
       }
-      console.log(process.env.VUE_APP_BASE_API2 + API2.GET_APPROVAL_INFO)
       request
-        .get(process.env.VUE_APP_BASE_API2 + API2.GET_APPROVAL_INFO, { params })
+        .get(process.env.VUE_APP_BASE_API2 + API2.GET_ENCLOSURE_INFO, { params })
         .then(res => {
           let data = res.data.data || {}
           if (res.data.code === 1000) {
